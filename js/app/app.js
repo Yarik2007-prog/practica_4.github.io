@@ -1,0 +1,159 @@
+import { router } from './router.js';
+import { header } from './widgets/header.js';
+import { msg } from './widgets/msg.js';
+import { popup } from './widgets/popup.js';
+import { toogle } from './widgets/toogle.js';
+
+document.addEventListener('DOMContentLoaded', function(){
+    const main = {
+        data(){
+            return {
+                url:"http://affiliate.yanbasok.com",
+                user:{name: "", phone: "", email: "", date: "", auth: "", type: ""},
+                formData:{ email:"", password:"" },
+                title:"",
+                date:"",
+                time:"",
+            }
+        },
+
+        watch:{
+            $route:function () {
+                this.init();
+            }
+        },
+
+        mounted:function(){
+            this.init();
+        },
+
+        methods:{
+            init(){
+                var self = this;
+
+if (window.localStorage.getItem("user")) {
+  self.user = JSON.parse(window.localStorage.getItem("user"));
+}
+
+router.isReady().then(() => {
+
+  if (window.localStorage.getItem("user")) {
+    self.user = JSON.parse(window.localStorage.getItem("user"));
+
+    if (
+      self.$route['path'] != '/' &&
+      self.user.type == 'admin'
+    ) {
+      self.page('/campaigns');
+    }
+
+    else if (
+      ['/campaigns', '/campaign', '/users', '/user']
+        .includes(self.$route['path']) &&
+      self.user.type == 'admin'
+    ) {
+      self.page('/statistics');
+    }
+
+    else if (
+      ['/statistics', '/payments', '/sites']
+        .includes(self.$route['path']) &&
+      self.user.type == 'admin'
+    ) {
+      self.page('/campaigns');
+    }
+
+    else if (
+      ['/campaigns', '/campaign', '/users', '/user', '/statistics', '/payments', '/sites']
+        .includes(self.$route['path'])
+    ) {
+      self.page();
+    }
+
+    else if (
+      ['/campaigns', '/campaign', '/users', '/user', '/statistics', '/payments', '/sites']
+        .includes(self.$route['path'])
+    ) {
+      self.page();
+    }
+
+  } else {
+    self.page('/');
+  }
+
+});
+
+            },
+
+            logout(){
+                this.user = {name:"", phone:"", email:"", date:"", auth:""};
+                this.page ('/');
+                window.localStorage.removeItem('user');
+            },
+
+            scrollTop(){
+                setTimeout(function(){
+                    window.scroll({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                }, 50);
+            },
+
+            scrollBottom(){
+                setTimeout(function(){
+                    window.scroll({
+                        top: 1000,
+                        behavior: 'smooth'
+                    });
+                }, 50);
+            },
+
+           page: function(path=""){
+    router.replace(path);
+    const route = router.currentRoute.value;
+    this.title = route.name;
+    document.title = route.name;
+},
+
+
+
+            toFormData(obj) {
+                const fd = new FormData();
+
+                for (let x in obj) {
+                    if (typeof obj[x] === 'object' && x !== 'img' && x !== 'copy') {
+
+                        for (let y in obj[x]) {
+                            if (typeof obj[x][y] === 'object') {
+
+                                for (let z in obj[x][y]) {
+                                    fd.append(`${x}[${y}][${z}]`, obj[x][y][z]);
+                                }
+
+                            } else {
+                                fd.append(`${x}[${y}]`, obj[x][y]);
+                            }
+                        }
+
+                    } else if (x !== 'copy') {
+                        fd.append(x, obj[x]); 
+                    }
+                }
+
+                return fd;
+            }
+    }
+};
+
+
+const app = Vue.createApp(main);
+
+app.component('Header', header);
+app.component('popup', popup);
+app.component('msg', msg);
+app.component('toogle', toogle);
+app.use(router);
+app.mount('#content');
+
+});
